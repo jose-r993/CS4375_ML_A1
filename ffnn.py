@@ -31,12 +31,9 @@ class FFNN(nn.Module):
         return self.loss(predicted_vector, gold_label)
 
     def forward(self, input_vector):
-        # [to fill] obtain first hidden layer representation
-
-        # [to fill] obtain output layer representation
-
-        # [to fill] obtain probability dist.
-
+        hidden = self.activation(self.W1(input_vector))
+        output = self.W2(hidden)
+        predicted_vector = self.softmax(output)
         return predicted_vector
 
 
@@ -184,4 +181,24 @@ if __name__ == "__main__":
         print("Validation time for this epoch: {}".format(time.time() - start_time))
 
     # write out to results/test.out
-    
+    # Test evaluation
+if args.test_data != "to fill":
+    test_data, _ = load_data(args.test_data, args.val_data)
+    test_data = convert_to_vector_representation(test_data, word2index)
+    model.eval()
+    correct = 0
+    total = 0
+    predictions = []
+    for input_vector, gold_label in test_data:
+        predicted_vector = model(input_vector)
+        predicted_label = torch.argmax(predicted_vector)
+        correct += int(predicted_label == gold_label)
+        total += 1
+        predictions.append(predicted_label.item())
+    print("Test accuracy: {}".format(correct / total))
+
+    # Write predictions to file
+    os.makedirs("results", exist_ok=True)
+    with open("results/test.out", "w") as f:
+        for pred in predictions:
+            f.write(str(pred) + "\n")

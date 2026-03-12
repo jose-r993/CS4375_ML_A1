@@ -30,14 +30,10 @@ class RNN(nn.Module):
         return self.loss(predicted_vector, gold_label)
 
     def forward(self, inputs):
-        # [to fill] obtain hidden layer representation (https://pytorch.org/docs/stable/generated/torch.nn.RNN.html)
-        _, hidden = 
-        # [to fill] obtain output layer representations
-
-        # [to fill] sum over output 
-
-        # [to fill] obtain probability dist.
-
+        output, _ = self.rnn(inputs)
+        output_layer = self.W(output)
+        summed = torch.sum(output_layer, dim=0)
+        predicted_vector = self.softmax(summed)
         return predicted_vector
 
 
@@ -177,7 +173,22 @@ if __name__ == "__main__":
         epoch += 1
 
 
-
+    #Test stuff:
+    if args.test_data != "to fill":
+        test_data_raw, _ = load_data(args.test_data, args.val_data)
+        model.eval()
+        correct = 0
+        total = 0
+        for input_words, gold_label in test_data_raw:
+            input_words = " ".join(input_words)
+            input_words = input_words.translate(input_words.maketrans("", "", string.punctuation)).split()
+            vectors = [word_embedding[i.lower()] if i.lower() in word_embedding.keys() else word_embedding['unk'] for i in input_words]
+            vectors = torch.tensor(vectors).view(len(vectors), 1, -1)
+            output = model(vectors)
+            predicted_label = torch.argmax(output)
+            correct += int(predicted_label == gold_label)
+            total += 1
+        print("Test accuracy: {}".format(correct / total))
     # You may find it beneficial to keep track of training accuracy or training loss;
 
     # Think about how to update the model and what this entails. Consider ffnn.py and the PyTorch documentation for guidance
